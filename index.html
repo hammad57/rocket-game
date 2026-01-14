@@ -11,37 +11,59 @@
         :root { --primary: #ff4b2b; --dark: #090909; --card: #151515; --green: #00e676; --blue: #2979ff; --orange: #f39c12; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
         body { background: var(--dark); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        #withdraw-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; align-items:center; justify-content:center; padding:20px; }
+        
+        /* Modals (Withdraw & Deposit) */
+        #withdraw-modal, #deposit-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; align-items:center; justify-content:center; padding:20px; }
         .modal-content { background:var(--card); padding:25px; border-radius:15px; width:100%; max-width:400px; border:1px solid #333; text-align:center; }
+        
         .referral-box { background:#222; padding:10px; border-radius:5px; margin:15px 0; font-size:0.8rem; border:1px dashed var(--primary); }
         .ref-list { margin-top: 10px; text-align: left; font-size: 0.75rem; max-height: 80px; overflow-y: auto; color: #888; }
         .ref-item { padding: 4px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        
         .explosion { position: absolute; font-size: 80px; z-index: 10; animation: blastPop 0.6s ease-out forwards; display: none; pointer-events: none; }
         @keyframes blastPop { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        .coin { position: fixed; top: -50px; font-size: 24px; z-index: 9999; pointer-events: none; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
         #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
-        .top-bar { background: #111; padding: 10px; display: flex; gap: 8px; justify-content: center; border-bottom: 1px solid #222; overflow-x: auto; min-height: 50px;}
-        .hist-item { background: #1a1a1a; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; color: #aaa; border: 1px solid #333; font-weight: bold; }
-        .main-layout { display: flex; flex: 1; overflow: hidden; }
-        .side-panel { width: 240px; background: #0e0e0e; border-right: 1px solid #222; display: flex; flex-direction: column; }
-        .panel-header { padding: 12px; background: #151515; font-weight: bold; font-size: 0.8rem; color: #888; border-bottom: 1px solid #222; text-transform: uppercase; }
-        .bet-list { flex: 1; overflow-y: auto; padding: 8px; font-size: 0.8rem; }
-        .bet-row { display: flex; justify-content: space-between; margin-bottom: 6px; background: #1a1a1a; padding: 10px; border-radius: 4px; border-left: 2px solid var(--primary); }
-        .game-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #000; }
+        
+        .top-bar { background: #111; padding: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 1px solid #222; overflow-x: auto; min-height: 50px;}
+        .hist-item { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; transition: all 0.5s ease; box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+
+        .main-layout { display: flex; flex: 1; overflow: hidden; width: 100%; }
+        .game-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #000; width: 100%; }
         #game-screen { flex: 1; position: relative; overflow: hidden; border-bottom: 1px solid #222; }
+        
         #rocket { position: absolute; bottom: 20px; left: 20px; font-size: 50px; transform: rotate(45deg); z-index: 2; transition: 0.1s linear; filter: drop-shadow(0 0 10px var(--primary)); }
-        #multiplier { font-size: 6rem; font-weight: 800; margin-top: 120px; text-align: center; color: #fff; }
-        #countdown-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; font-weight: 900; color: var(--blue); z-index: 5; }
+        #multiplier { font-size: 6rem; font-weight: 800; margin-top: 120px; text-align: center; color: #fff; display: none; }
+        #countdown-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: var(--blue); z-index: 5; text-shadow: 0 0 20px rgba(41, 121, 255, 0.5); }
+        
         .history-panel { height: 180px; background: #050505; border-top: 1px solid #222; overflow-y: auto; padding: 15px; }
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .hist-table th { color: #444; text-align: left; padding-bottom: 10px; border-bottom: 1px solid #111; }
         .hist-table td { padding: 8px 0; border-bottom: 1px solid #111; color: #ccc; }
-        .control-bar { padding: 20px; background: #111; display: flex; gap: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
-        input { width: 120px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; text-align: center; font-size: 1.1rem; }
-        .btn-main { height: 50px; padding: 0 30px; border-radius: 6px; border: none; color: #fff; font-weight: bold; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; }
-        .btn-withdraw { background: #333; font-size: 0.8rem; padding: 5px 15px; height: auto; border: 1px solid #444; margin-left: 10px;}
+        
+        .control-bar { padding: 15px; background: #111; display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .input-group { text-align: center; border-right: 1px solid #333; padding-right: 15px; }
+        input { width: 100px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; text-align: center; font-size: 1.1rem; }
+        .btn-main { height: 50px; padding: 0 25px; border-radius: 6px; border: none; color: #fff; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase; }
+        .btn-action { background: #333; font-size: 0.7rem; padding: 4px 10px; height: auto; border: 1px solid #444; margin: 2px; cursor: pointer; border-radius: 4px; color: #fff; }
+        
+        /* Deposit Modal Style */
+        .deposit-input { width: 100% !important; margin: 15px 0; background: #222 !important; border: 1px solid var(--blue) !important; }
     </style>
 </head>
 <body>
+
+    <div id="deposit-modal">
+        <div class="modal-content">
+            <h3 style="color:var(--blue)"><i class="fas fa-wallet"></i> DEPOSIT MONEY</h3>
+            <p style="font-size: 0.8rem; color:#888; margin-top: 10px;">Enter amount you want to add to your balance.</p>
+            <input type="number" id="dep-amount" class="deposit-input" placeholder="Enter Amount (e.g. 500)">
+            <button class="btn-main" style="background:var(--blue); width:100%" onclick="sendDepositToWhatsApp()">ADD MONEY</button>
+            <button onclick="closeDep()" style="background:transparent; color:#666; border:none; margin-top:15px; cursor:pointer;">Cancel</button>
+        </div>
+    </div>
 
     <div id="withdraw-modal">
         <div class="modal-content">
@@ -70,10 +92,6 @@
 
     <div class="top-bar" id="crash-history-bar"></div>
     <div class="main-layout">
-        <div class="side-panel">
-            <div class="panel-header">Active Players: <span id="live-bet-count">0</span></div>
-            <div class="bet-list" id="live-bet-list"></div>
-        </div>
         <div class="game-area">
             <div id="game-screen">
                 <div id="blast-effect" class="explosion">💥</div>
@@ -83,9 +101,10 @@
             </div>
             <div class="control-bar">
                 <div class="input-group">
-                    <small style="color:#666">BALANCE</small>
-                    <button class="btn-withdraw" onclick="openWD()">WITHDRAW</button><br>
-                    <span style="color: var(--green); font-weight: bold; font-size: 1.2rem;">₹<span id="u-bal">0.00</span></span>
+                    <small style="color:#666">BALANCE</small><br>
+                    <span style="color: var(--green); font-weight: bold; font-size: 1.1rem;">₹<span id="u-bal">0.00</span></span><br>
+                    <button class="btn-action" style="background:var(--blue)" onclick="openDep()">DEPOSIT</button>
+                    <button class="btn-action" onclick="openWD()">WITHDRAW</button>
                 </div>
                 <div id="input-area">
                     <input type="number" id="bet-amt" value="10">
@@ -120,6 +139,9 @@
 
         let userPh = "", currentMult = 1.00, isRunning = false, hasBet = false, hasCashedOut = false;
         let isBettingAllowed = false, betValue = 0, gameLoop, crashHistoryArr = [];
+        
+        // ADMIN WHATSAPP NUMBER (Change this to yours)
+        const adminWhatsApp = "+923423944508"; 
 
         function enterApp() {
             userPh = document.getElementById('u-phone').value;
@@ -128,9 +150,8 @@
             const refBy = urlParams.get('ref');
             db.ref('users/' + userPh).once('value', snap => {
                 if(!snap.exists()) {
-                    // NEW USER BALANCE SET TO 25
                     db.ref('users/' + userPh).set({ 
-                        balance: 25, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
+                        balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
                         if(refBy && refBy !== userPh) db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
                     });
@@ -141,15 +162,27 @@
             });
         }
 
+        // Deposit Functions
+        function openDep() { document.getElementById('deposit-modal').style.display = 'flex'; }
+        function closeDep() { document.getElementById('deposit-modal').style.display = 'none'; }
+        
+        function sendDepositToWhatsApp() {
+            const amount = document.getElementById('dep-amount').value;
+            if(!amount || amount < 1) return alert("Please enter a valid amount!");
+            
+            const message = `Hello Admin, I want to Deposit Money.\n\nUser Phone: ${userPh}\nAmount: ₹${amount}\n\nPlease update my balance.`;
+            const encodedMsg = encodeURIComponent(message);
+            const whatsappURL = `https://wa.me/${adminWhatsApp}?text=${encodedMsg}`;
+            
+            window.open(whatsappURL, '_blank');
+            closeDep();
+        }
+
         async function openWD() {
             db.ref('withdraw_requests').orderByChild('userId').equalTo(userPh).once('value', async snap => {
                 let hasPending = false;
                 snap.forEach(c => { if(c.val().status === 'pending') hasPending = true; });
-
-                if(hasPending) {
-                    alert("You already have a pending withdrawal request! Please wait for approval.");
-                    return;
-                }
+                if(hasPending) { alert("You already have a pending withdrawal request!"); return; }
 
                 const userSnap = await db.ref('users/' + userPh).once('value');
                 const data = userSnap.val();
@@ -188,17 +221,10 @@
                 const data = snap.val();
                 const count = data.withdrawCount || 0;
                 const limit = [100, 300, 500, 1000][count] || 1000;
-                
                 const newBal = (data.balance - limit).toFixed(2);
                 db.ref('users/' + userPh).update({ balance: Number(newBal) });
-                
-                db.ref('withdraw_requests').push({
-                    userId: userPh,
-                    amount: limit,
-                    status: 'pending',
-                    time: new Date().toLocaleString()
-                }).then(() => {
-                    alert("Withdrawal request of ₹" + limit + " sent! Amount deducted from balance.");
+                db.ref('withdraw_requests').push({ userId: userPh, amount: limit, status: 'pending', time: new Date().toLocaleString() }).then(() => {
+                    alert("Withdrawal request sent!");
                     closeWD();
                 });
             });
@@ -208,10 +234,7 @@
             const refListDiv = document.getElementById('my-ref-list');
             refListDiv.innerHTML = "Checking invited friends...";
             db.ref('users').orderByChild('referredBy').equalTo(userPh).once('value', snap => {
-                if(!snap.exists()) {
-                    refListDiv.innerHTML = "<div style='color:#555'>No friends found yet.</div>";
-                    return;
-                }
+                if(!snap.exists()) { refListDiv.innerHTML = "<div style='color:#555'>No friends found yet.</div>"; return; }
                 refListDiv.innerHTML = "<b>Invited Friends:</b>";
                 snap.forEach(child => {
                     const u = child.val();
@@ -228,9 +251,7 @@
         function closeWD() { document.getElementById('withdraw-modal').style.display = 'none'; }
 
         function syncData() {
-            db.ref('users/' + userPh + '/balance').on('value', snap => {
-                document.getElementById('u-bal').innerText = Number(snap.val() || 0).toFixed(2);
-            });
+            db.ref('users/' + userPh + '/balance').on('value', snap => { document.getElementById('u-bal').innerText = Number(snap.val() || 0).toFixed(2); });
             db.ref('history/' + userPh).limitToLast(8).on('value', snap => {
                 const tbody = document.getElementById('my-history');
                 tbody.innerHTML = "";
@@ -242,12 +263,26 @@
             });
         }
 
+        function coinRain() {
+            for(let i=0; i<30; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.innerHTML = "💰";
+                    coin.className = "coin";
+                    coin.style.left = Math.random() * 100 + "vw";
+                    coin.style.animationDuration = (Math.random() * 2 + 1) + "s";
+                    document.body.appendChild(coin);
+                    setTimeout(() => coin.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
         function startCountdown() {
             let count = 6;
             hasBet = false; hasCashedOut = false; currentMult = 1.00;
             isBettingAllowed = true;
-            document.getElementById('live-bet-count').innerText = "0";
-            document.getElementById('live-bet-list').innerHTML = "";
+            document.getElementById('multiplier').style.display = "none";
+            document.getElementById('countdown-box').style.display = "block";
             document.getElementById('multiplier').innerText = "1.00x";
             document.getElementById('multiplier').style.color = "white";
             document.getElementById('rocket').style.display = "block";
@@ -263,7 +298,8 @@
                 document.getElementById('countdown-box').innerText = count > 0 ? count : "GO!";
                 if(count < 0) {
                     clearInterval(timer);
-                    document.getElementById('countdown-box').innerText = "";
+                    document.getElementById('countdown-box').style.display = "none";
+                    document.getElementById('multiplier').style.display = "block";
                     isBettingAllowed = false;
                     document.getElementById('btn-cancel').style.display = 'none';
                     if(!hasBet) {
@@ -285,8 +321,6 @@
             if(betValue < 1 || betValue > bal) return;
             db.ref('users/' + userPh).update({ balance: Number((bal - betValue).toFixed(2)) });
             hasBet = true;
-            document.getElementById('live-bet-count').innerText = "1";
-            document.getElementById('live-bet-list').innerHTML = `<div class="bet-row"><span>${userPh.slice(-4)}</span><span>₹${betValue}</span></div>`;
             document.getElementById('btn-bet').style.display = 'none';
             document.getElementById('btn-cancel').style.display = 'block';
         }
@@ -296,8 +330,6 @@
             let bal = Number(document.getElementById('u-bal').innerText);
             db.ref('users/' + userPh).update({ balance: Number((bal + betValue).toFixed(2)) });
             hasBet = false;
-            document.getElementById('live-bet-count').innerText = "0";
-            document.getElementById('live-bet-list').innerHTML = "";
             document.getElementById('btn-cancel').style.display = 'none';
             document.getElementById('btn-bet').style.display = 'block';
         }
@@ -337,6 +369,7 @@
         function cashOut() {
             if(!isRunning || hasCashedOut || !hasBet) return;
             hasCashedOut = true;
+            coinRain();
             let winAmt = Number((betValue * currentMult).toFixed(2));
             db.ref('users/' + userPh + '/balance').once('value', snap => {
                 let newB = Number((Number(snap.val()) + winAmt).toFixed(2));
@@ -348,8 +381,12 @@
 
         function updateTopBar(val) {
             crashHistoryArr.unshift(val);
-            if(crashHistoryArr.length > 8) crashHistoryArr.pop();
-            document.getElementById('crash-history-bar').innerHTML = crashHistoryArr.map(v => `<div class="hist-item ${v > 10 ? 'high' : v > 3 ? 'mid' : ''}">${v}x</div>`).join("");
+            if(crashHistoryArr.length > 10) crashHistoryArr.pop();
+            const colors = ['#00e676', '#2979ff', '#f39c12', '#ff4b2b', '#9b59b6', '#00d2d3'];
+            document.getElementById('crash-history-bar').innerHTML = crashHistoryArr.map((v, index) => {
+                let randomColor = colors[Math.floor(Math.random() * colors.length)];
+                return `<div class="hist-item" style="color:${randomColor}; border: 1px solid ${randomColor}44; background: ${randomColor}11;">${v}x</div>`;
+            }).join("");
         }
 
         function saveHistory(b, m, w) {
@@ -358,4 +395,4 @@
         }
     </script>
 </body>
-</html>
+</html>1:07 AM ‎15/‎01/‎2026
