@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Rocket Hub Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #ff4b2b; --bg: #0f0f0f; --card: #1a1a1a; --border: #333; --green: #00e676; --orange: #f39c12; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input { padding: 10px; background: #222; color: #fff; border: 1px solid var(--border); border-radius: 5px; margin: 5px 0; }
+        button { background: var(--primary); color: #fff; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        .user-row { background: #222; margin-bottom: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .user-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; }
+        .user-details { display: none; padding: 15px; background: #151515; border-top: 1px solid var(--border); }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background: #222; color: #888; }
+        .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; background: var(--primary); }
+        .ref-link { color: #ff4b2b; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
+        .status-ok { color: #00e676; font-weight: bold; }
+        .status-wait { color: #777; }
+        /* Withdrawal Request Styles */
+        .req-row { background: #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--orange); }
+        .btn-approve { background: var(--green); color: #000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="login-box" style="text-align: center; margin-top: 100px;">
+        <div class="card" style="width:320px; display:inline-block;">
+            <h3><i class="fas fa-user-shield"></i> Admin Login</h3>
+            <input type="text" id="admin-user" placeholder="Username" style="width: 100%;">
+            <input type="password" id="admin-pass" placeholder="Password" style="width: 100%;">
+            <button onclick="login()" style="width: 100%; margin-top: 10px;">LOGIN</button>
+        </div>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+        <div class="card">
+            <h2><i class="fas fa-money-bill-wave"></i> Pending Withdrawals</h2>
+            <div id="requests-container">No pending requests</div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-users"></i> Registered Users</h2>
+            <div id="user-container">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOgtsEs4yh4R-ohzY3reACaXugG0bkkvM",
+            authDomain: "dailytasktracker-1851b.firebaseapp.com",
+            databaseURL: "https://dailytasktracker-1851b-default-rtdb.firebaseio.com",
+            projectId: "dailytasktracker-1851b",
+            storageBucket: "dailytasktracker-1851b.firebasestorage.app",
+            messagingSenderId: "663287980512",
+            appId: "1:663287980512:web:7c06b6050580a3802fcb85"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function login() {
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
+            db.ref('admin_creds').once('value', snap => {
+                const d = snap.val();
+                if(d && u === d.username && p == d.password) {
+                    document.getElementById('login-box').style.display='none';
+                    document.getElementById('admin-content').style.display='block';
+                    loadUsers();
+                    listenToRequests(); // Start listening for withdraw requests
+                } else { alert("Invalid Credentials"); }
+            });
+        }
+
+        // Logic to show pending withdraw requests
+        function listenToRequests() {
+            db.ref('withdraw_requests').orderByChild('status').equalTo('pending').on('value', snap => {
+                const container = document.getElementById('requests-container');
+                if(!snap.exists()) {
+                    container.innerHTML = "<p style='color:#777'>No pending requests</p>";
+                    return;
+                }
+                container.innerHTML = "";
+                snap.forEach(child => {
+                    const req = child.val();
+                    const reqId = child.key;
+                    container.innerHTML += `
+                        <div class="req-row">
+                            <div>
+                                <b>User ID: ${req.userId}</b><br>
+                                <small style="color:#888">${req.time}</small>
+                            </div>
+                            <div style="color:var(--green); font-size:1.2rem; font-weight:bold;">₹${req.amount}</div>
+                            <button class="btn-approve" onclick="approveWithdrawal('${reqId}', '${req.userId}', ${req.amount})">APPROVE</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        async function approveWithdrawal(reqId, userId, amount) {
+            if(confirm(`Approve withdrawal for User ${userId} of ₹${amount}?`)) {
+                const userSnap = await db.ref(`users/${userId}`).once('value');
+                const userData = userSnap.val();
+                
+                const newBalance = (Number(userData.balance) - amount).toFixed(2);
+                const newCount = (userData.withdrawCount || 0) + 1;
+                
+                await db.ref(`users/${userId}`).update({
+                    balance: newBalance,
+                    withdrawCount: newCount
+                });
+                await db.ref(`withdraw_requests/${reqId}`).update({ status: "approved" });
+                
+                logTransaction(userId, "Withdrawal Approved", -amount);
+                alert("Withdrawal Approved Successfully!");
+            }
+        }
+
+        function loadUsers() {
+            db.ref('users').on('value', snap => {
+                const container = document.getElementById('user-container');
+                container.innerHTML = "";
+                snap.forEach(userSnap => {
+                    const userId = userSnap.key;
+                    const userData = userSnap.val();
+                    const wCount = userData.withdrawCount || 0;
+                    
+                    container.innerHTML += `
+                        <div class="user-row">
+                            <div class="user-header" onclick="toggleExpand('${userId}')">
+                                <span><b>ID: ${userId}</b> (₹${Number(userData.balance).toFixed(2)})</span>
+                                <span>Withdrawals: <span class="badge">${wCount}</span> <i class="fas fa-chevron-down"></i></span>
+                            </div>
+                            <div class="user-details" id="details-${userId}">
+                                <div class="grid-3">
+                                    <div>
+                                        <h4>Manual Control</h4>
+                                        <input type="number" id="amt-${userId}" placeholder="Amount">
+                                        <button onclick="updateBalance('${userId}')">Update Balance</button>
+                                        <button onclick="toggleRechargeStatus('${userId}', ${userData.isRecharged})" style="margin-top:5px; background:${userData.isRecharged ? '#444' : '#00e676'}">
+                                            ${userData.isRecharged ? 'Mark Un-recharged' : 'Mark Recharged'}
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <h4>Referral Stats</h4>
+                                        <p>Total Invited: ${userData.referrals || 0}</p>
+                                        <p>Active (Recharged): ${userData.activeReferrals || 0}</p>
+                                        <span class="ref-link" onclick="fetchReferralDetails('${userId}')">View Invited List</span>
+                                    </div>
+                                </div>
+                                <div id="ref-box-${userId}" style="display:none; margin-top:15px; background:#000; padding:10px; border-radius:5px;">
+                                    <h4>Invited Users Details</h4>
+                                    <table id="ref-table-${userId}"></table>
+                                </div>
+                                <div class="history-section">
+                                    <h4>Game History</h4>
+                                    <table id="bet-hist-${userId}"></table>
+                                    <h4>Transaction History</h4>
+                                    <table id="trans-hist-${userId}"></table>
+                                </div>
+                            </div>
+                        </div>`;
+                    fetchHistory(userId);
+                });
+            });
+        }
+
+        function toggleExpand(id) {
+            const el = document.getElementById(`details-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleRechargeStatus(id, current) {
+            db.ref(`users/${id}`).update({ isRecharged: !current });
+            db.ref(`users/${id}/referredBy`).once('value', s => {
+                const parent = s.val();
+                if(parent && parent !== "direct") {
+                    db.ref(`users/${parent}/activeReferrals`).transaction(c => !current ? (c || 0) + 1 : (c > 0 ? c - 1 : 0));
+                }
+            });
+        }
+
+        // Fixed: Removed the Alert and added actual logic to show the list
+        function fetchReferralDetails(parentId) {
+            const box = document.getElementById(`ref-box-${parentId}`);
+            const table = document.getElementById(`ref-table-${parentId}`);
+            
+            // Toggle visibility
+            if(box.style.display === "block") {
+                box.style.display = "none";
+                return;
+            }
+            
+            box.style.display = "block";
+            table.innerHTML = "<tr><th>User ID</th><th>Status</th></tr>";
+            
+            db.ref('users').orderByChild('referredBy').equalTo(parentId).once('value', snap => {
+                if(!snap.exists()) {
+                    table.innerHTML += "<tr><td colspan='2'>No referrals found</td></tr>";
+                    return;
+                }
+                snap.forEach(child => {
+                    const u = child.val();
+                    const statusClass = u.isRecharged ? 'status-ok' : 'status-wait';
+                    table.innerHTML += `<tr>
+                        <td>${child.key}</td>
+                        <td class="${statusClass}">${u.isRecharged ? 'Recharged ✓' : 'Joined'}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function updateBalance(id) {
+            const amt = Number(document.getElementById(`amt-${id}`).value);
+            if(!amt) return;
+            db.ref(`users/${id}/balance`).transaction(c => (Number(c) || 0) + amt);
+            logTransaction(id, amt > 0 ? "Admin Add" : "Admin Deduct", amt);
+            document.getElementById(`amt-${id}`).value = "";
+        }
+
+        function logTransaction(u, t, a) {
+            db.ref(`transactions/${u}`).push({ time: new Date().toLocaleString(), type: t, amt: a });
+        }
+
+        function fetchHistory(userId) {
+            db.ref(`history/${userId}`).limitToLast(10).once('value', snap => {
+                const table = document.getElementById(`bet-hist-${userId}`);
+                table.innerHTML = "<tr><th>Time</th><th>Bet</th><th>Win</th></tr>";
+                snap.forEach(c => {
+                    const d = c.val();
+                    table.innerHTML += `<tr><td>${d.time}</td><td>₹${d.bet}</td><td style="color:${d.win>0?'#00e676':'#ff4b2b'}">₹${d.win}</td></tr>`;
+                });
+            });
+            db.ref(`transactions/${userId}`).limitToLast(5).once('value', snap => {
+                const table = document.getElementById(`trans-hist-${userId}`);
+                table.innerHTML = "<tr><th>Time</th><th>Type</th><th>Amt</th></tr>";
+                snap.forEach(c => {
+                    const d = c.val();
+                    table.innerHTML += `<tr><td>${d.time}</td><td>${d.type}</td><td>₹${d.amt}</td></tr>`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
