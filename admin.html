@@ -25,7 +25,6 @@
         .ref-link { color: #ff4b2b; cursor: pointer; font-size: 0.8rem; text-decoration: underline; }
         .status-ok { color: #00e676; font-weight: bold; }
         .status-wait { color: #777; }
-        /* Withdrawal Request Styles */
         .req-row { background: #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--orange); }
         .btn-approve { background: var(--green); color: #000; font-weight: bold; }
     </style>
@@ -46,7 +45,6 @@
             <h2><i class="fas fa-money-bill-wave"></i> Pending Withdrawals</h2>
             <div id="requests-container">No pending requests</div>
         </div>
-
         <div class="card">
             <h2><i class="fas fa-users"></i> Registered Users</h2>
             <div id="user-container">Loading...</div>
@@ -75,12 +73,11 @@
                     document.getElementById('login-box').style.display='none';
                     document.getElementById('admin-content').style.display='block';
                     loadUsers();
-                    listenToRequests(); // Start listening for withdraw requests
+                    listenToRequests();
                 } else { alert("Invalid Credentials"); }
             });
         }
 
-        // Logic to show pending withdraw requests
         function listenToRequests() {
             db.ref('withdraw_requests').orderByChild('status').equalTo('pending').on('value', snap => {
                 const container = document.getElementById('requests-container');
@@ -98,7 +95,7 @@
                                 <b>User ID: ${req.userId}</b><br>
                                 <small style="color:#888">${req.time}</small>
                             </div>
-                            <div style="color:var(--green); font-size:1.2rem; font-weight:bold;">₹${req.amount}</div>
+                            <div style="color:var(--green); font-size:1.2rem; font-weight:bold;">Rs.${req.amount}</div>
                             <button class="btn-approve" onclick="approveWithdrawal('${reqId}', '${req.userId}', ${req.amount})">APPROVE</button>
                         </div>
                     `;
@@ -107,19 +104,13 @@
         }
 
         async function approveWithdrawal(reqId, userId, amount) {
-            if(confirm(`Approve withdrawal for User ${userId} of ₹${amount}?`)) {
+            if(confirm(`Approve withdrawal for User ${userId} of Rs.${amount}?`)) {
                 const userSnap = await db.ref(`users/${userId}`).once('value');
                 const userData = userSnap.val();
-                
                 const newBalance = (Number(userData.balance) - amount).toFixed(2);
                 const newCount = (userData.withdrawCount || 0) + 1;
-                
-                await db.ref(`users/${userId}`).update({
-                    balance: newBalance,
-                    withdrawCount: newCount
-                });
+                await db.ref(`users/${userId}`).update({ balance: newBalance, withdrawCount: newCount });
                 await db.ref(`withdraw_requests/${reqId}`).update({ status: "approved" });
-                
                 logTransaction(userId, "Withdrawal Approved", -amount);
                 alert("Withdrawal Approved Successfully!");
             }
@@ -133,11 +124,10 @@
                     const userId = userSnap.key;
                     const userData = userSnap.val();
                     const wCount = userData.withdrawCount || 0;
-                    
                     container.innerHTML += `
                         <div class="user-row">
                             <div class="user-header" onclick="toggleExpand('${userId}')">
-                                <span><b>ID: ${userId}</b> (₹${Number(userData.balance).toFixed(2)})</span>
+                                <span><b>ID: ${userId}</b> (Rs.${Number(userData.balance).toFixed(2)})</span>
                                 <span>Withdrawals: <span class="badge">${wCount}</span> <i class="fas fa-chevron-down"></i></span>
                             </div>
                             <div class="user-details" id="details-${userId}">
@@ -189,32 +179,18 @@
             });
         }
 
-        // Fixed: Removed the Alert and added actual logic to show the list
         function fetchReferralDetails(parentId) {
             const box = document.getElementById(`ref-box-${parentId}`);
             const table = document.getElementById(`ref-table-${parentId}`);
-            
-            // Toggle visibility
-            if(box.style.display === "block") {
-                box.style.display = "none";
-                return;
-            }
-            
+            if(box.style.display === "block") { box.style.display = "none"; return; }
             box.style.display = "block";
             table.innerHTML = "<tr><th>User ID</th><th>Status</th></tr>";
-            
             db.ref('users').orderByChild('referredBy').equalTo(parentId).once('value', snap => {
-                if(!snap.exists()) {
-                    table.innerHTML += "<tr><td colspan='2'>No referrals found</td></tr>";
-                    return;
-                }
+                if(!snap.exists()) { table.innerHTML += "<tr><td colspan='2'>No referrals found</td></tr>"; return; }
                 snap.forEach(child => {
                     const u = child.val();
                     const statusClass = u.isRecharged ? 'status-ok' : 'status-wait';
-                    table.innerHTML += `<tr>
-                        <td>${child.key}</td>
-                        <td class="${statusClass}">${u.isRecharged ? 'Recharged ✓' : 'Joined'}</td>
-                    </tr>`;
+                    table.innerHTML += `<tr><td>${child.key}</td><td class="${statusClass}">${u.isRecharged ? 'Recharged ✓' : 'Joined'}</td></tr>`;
                 });
             });
         }
@@ -237,7 +213,7 @@
                 table.innerHTML = "<tr><th>Time</th><th>Bet</th><th>Win</th></tr>";
                 snap.forEach(c => {
                     const d = c.val();
-                    table.innerHTML += `<tr><td>${d.time}</td><td>₹${d.bet}</td><td style="color:${d.win>0?'#00e676':'#ff4b2b'}">₹${d.win}</td></tr>`;
+                    table.innerHTML += `<tr><td>${d.time}</td><td>Rs.${d.bet}</td><td style="color:${d.win>0?'#00e676':'#ff4b2b'}">Rs.${d.win}</td></tr>`;
                 });
             });
             db.ref(`transactions/${userId}`).limitToLast(5).once('value', snap => {
@@ -245,7 +221,7 @@
                 table.innerHTML = "<tr><th>Time</th><th>Type</th><th>Amt</th></tr>";
                 snap.forEach(c => {
                     const d = c.val();
-                    table.innerHTML += `<tr><td>${d.time}</td><td>${d.type}</td><td>₹${d.amt}</td></tr>`;
+                    table.innerHTML += `<tr><td>${d.time}</td><td>${d.type}</td><td>Rs.${d.amt}</td></tr>`;
                 });
             });
         }
