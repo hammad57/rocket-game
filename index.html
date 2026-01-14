@@ -128,6 +128,7 @@
             const refBy = urlParams.get('ref');
             db.ref('users/' + userPh).once('value', snap => {
                 if(!snap.exists()) {
+                    // Yahan balance update kar diya gaya hai (30 kar diya gaya hai)
                     db.ref('users/' + userPh).set({ 
                         balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
@@ -188,11 +189,9 @@
                 const count = data.withdrawCount || 0;
                 const limit = [100, 300, 500, 1000][count] || 1000;
                 
-                // Cut balance immediately
                 const newBal = (data.balance - limit).toFixed(2);
                 db.ref('users/' + userPh).update({ balance: Number(newBal) });
                 
-                // Add to request queue
                 db.ref('withdraw_requests').push({
                     userId: userPh,
                     amount: limit,
