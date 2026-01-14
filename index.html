@@ -128,9 +128,9 @@
             const refBy = urlParams.get('ref');
             db.ref('users/' + userPh).once('value', snap => {
                 if(!snap.exists()) {
-                    // Yahan balance update kar diya gaya hai (30 kar diya gaya hai)
+                    // NEW USER BALANCE SET TO 25
                     db.ref('users/' + userPh).set({ 
-                        balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
+                        balance: 25, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
                         if(refBy && refBy !== userPh) db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
                     });
