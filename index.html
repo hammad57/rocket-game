@@ -25,7 +25,11 @@
         .coin { position: fixed; top: -50px; font-size: 24px; z-index: 9999; pointer-events: none; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 
+        /* Auth Screen Styling */
         #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
+        .auth-container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #222; width: 100%; max-width: 350px; text-align: center; }
+        .auth-input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; text-align: center; }
+        .auth-link { color: var(--blue); cursor: pointer; font-size: 0.85rem; margin-top: 15px; display: inline-block; }
         
         .top-bar { background: #111; padding: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 1px solid #222; overflow-x: auto; min-height: 50px;}
         .hist-item { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; transition: all 0.5s ease; box-shadow: 0 0 5px rgba(255,255,255,0.1); }
@@ -84,10 +88,20 @@
     </div>
 
     <div id="auth-screen">
-        <i class="fas fa-rocket" style="font-size: 4rem; color: var(--primary); margin-bottom: 15px;"></i>
-        <h1>ROCKET GAME</h1>
-        <input type="number" id="u-phone" placeholder="PHONE NUMBER" style="width: 260px; margin-top: 20px;">
-        <button class="btn-main" style="background:var(--primary); margin-top:15px; width: 260px;" onclick="enterApp()">PLAY NOW</button>
+        <div class="auth-container">
+            <i class="fas fa-rocket" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2 id="auth-title">LOGIN</h2>
+            
+            <input type="number" id="u-phone" class="auth-input" placeholder="PHONE NUMBER">
+            <input type="password" id="u-pass" class="auth-input" placeholder="PASSWORD">
+            
+            <button id="auth-btn" class="btn-main" style="background:var(--primary); margin-top:20px; width: 100%;" onclick="handleAuth()">LOGIN NOW</button>
+            
+            <div id="auth-switch">
+                <span class="auth-link" onclick="toggleAuth(true)">Don't have an account? Signup</span><br>
+                <span class="auth-link" style="color:#666" onclick="forgotPass()">Forgot Password?</span>
+            </div>
+        </div>
     </div>
 
     <div class="top-bar" id="crash-history-bar"></div>
@@ -139,28 +153,61 @@
 
         let userPh = "", currentMult = 1.00, isRunning = false, hasBet = false, hasCashedOut = false;
         let isBettingAllowed = false, betValue = 0, gameLoop, crashHistoryArr = [];
+        let isSignupMode = false;
         
-        // ADMIN WHATSAPP NUMBER (Change this to yours)
         const adminWhatsApp = "+923423944508"; 
 
-        function enterApp() {
+        // --- Auth Functions ---
+        function toggleAuth(signup) {
+            isSignupMode = signup;
+            document.getElementById('auth-title').innerText = signup ? "SIGNUP" : "LOGIN";
+            document.getElementById('auth-btn').innerText = signup ? "CREATE ACCOUNT" : "LOGIN NOW";
+            document.getElementById('auth-switch').innerHTML = signup ? 
+                `<span class="auth-link" onclick="toggleAuth(false)">Already have an account? Login</span>` :
+                `<span class="auth-link" onclick="toggleAuth(true)">Don't have an account? Signup</span><br>
+                 <span class="auth-link" style="color:#666" onclick="forgotPass()">Forgot Password?</span>`;
+        }
+
+        function handleAuth() {
             userPh = document.getElementById('u-phone').value;
-            if(userPh.length < 5) return alert("Enter Phone Number");
+            const userPass = document.getElementById('u-pass').value;
+            
+            if(userPh.length < 5 || userPass.length < 4) return alert("Enter valid Phone and Password (min 4 chars)");
+
             const urlParams = new URLSearchParams(window.location.search);
             const refBy = urlParams.get('ref');
+
             db.ref('users/' + userPh).once('value', snap => {
-                if(!snap.exists()) {
+                if (isSignupMode) {
+                    if(snap.exists()) return alert("User already exists! Please Login.");
                     db.ref('users/' + userPh).set({ 
+                        password: userPass,
                         balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
                         if(refBy && refBy !== userPh) db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
+                        enterGame();
                     });
+                } else {
+                    if(!snap.exists()) return alert("User not found! Please Signup.");
+                    if(snap.val().password !== userPass) return alert("Wrong Password!");
+                    enterGame();
                 }
-                document.getElementById('auth-screen').style.display = 'none';
-                syncData();
-                startCountdown();
             });
         }
+
+        function forgotPass() {
+            const ph = document.getElementById('u-phone').value;
+            if(!ph) return alert("Please enter your Phone Number first.");
+            const msg = `Hello Admin, I forgot my password.\nMy Phone: ${ph}`;
+            window.open(`https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function enterGame() {
+            document.getElementById('auth-screen').style.display = 'none';
+            syncData();
+            startCountdown();
+        }
+        // --- End Auth Functions ---
 
         // Deposit Functions
         function openDep() { document.getElementById('deposit-modal').style.display = 'flex'; }
@@ -169,12 +216,8 @@
         function sendDepositToWhatsApp() {
             const amount = document.getElementById('dep-amount').value;
             if(!amount || amount < 1) return alert("Please enter a valid amount!");
-            
             const message = `Hello Admin, I want to Deposit Money.\n\nUser Phone: ${userPh}\nAmount: ₹${amount}\n\nPlease update my balance.`;
-            const encodedMsg = encodeURIComponent(message);
-            const whatsappURL = `https://wa.me/${adminWhatsApp}?text=${encodedMsg}`;
-            
-            window.open(whatsappURL, '_blank');
+            window.open(`https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
             closeDep();
         }
 
@@ -395,4 +438,4 @@
         }
     </script>
 </body>
-</html>1:07 AM ‎15/‎01/‎2026
+</html>
