@@ -129,7 +129,7 @@
             db.ref('users/' + userPh).once('value', snap => {
                 if(!snap.exists()) {
                     db.ref('users/' + userPh).set({ 
-                        balance: 200, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
+                        balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
                         if(refBy && refBy !== userPh) db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
                     });
