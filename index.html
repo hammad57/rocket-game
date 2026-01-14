@@ -11,49 +11,36 @@
         :root { --primary: #ff4b2b; --dark: #090909; --card: #151515; --green: #00e676; --blue: #2979ff; --orange: #f39c12; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
         body { background: var(--dark); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Modals (Withdraw & Deposit) */
         #withdraw-modal, #deposit-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; align-items:center; justify-content:center; padding:20px; }
         .modal-content { background:var(--card); padding:25px; border-radius:15px; width:100%; max-width:400px; border:1px solid #333; text-align:center; }
-        
         .referral-box { background:#222; padding:10px; border-radius:5px; margin:15px 0; font-size:0.8rem; border:1px dashed var(--primary); }
         .ref-list { margin-top: 10px; text-align: left; font-size: 0.75rem; max-height: 80px; overflow-y: auto; color: #888; }
         .ref-item { padding: 4px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
-        
         .explosion { position: absolute; font-size: 80px; z-index: 10; animation: blastPop 0.6s ease-out forwards; display: none; pointer-events: none; }
         @keyframes blastPop { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
         .coin { position: fixed; top: -50px; font-size: 24px; z-index: 9999; pointer-events: none; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-
-        /* Auth Screen Styling */
         #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
         .auth-container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #222; width: 100%; max-width: 350px; text-align: center; }
         .auth-input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; text-align: center; }
         .auth-link { color: var(--blue); cursor: pointer; font-size: 0.85rem; margin-top: 15px; display: inline-block; }
-        
         .top-bar { background: #111; padding: 10px; display: flex; gap: 10px; justify-content: center; border-bottom: 1px solid #222; overflow-x: auto; min-height: 50px;}
         .hist-item { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; transition: all 0.5s ease; box-shadow: 0 0 5px rgba(255,255,255,0.1); }
-
         .main-layout { display: flex; flex: 1; overflow: hidden; width: 100%; }
         .game-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #000; width: 100%; }
         #game-screen { flex: 1; position: relative; overflow: hidden; border-bottom: 1px solid #222; }
-        
         #rocket { position: absolute; bottom: 20px; left: 20px; font-size: 50px; transform: rotate(45deg); z-index: 2; transition: 0.1s linear; filter: drop-shadow(0 0 10px var(--primary)); }
         #multiplier { font-size: 6rem; font-weight: 800; margin-top: 120px; text-align: center; color: #fff; display: none; }
         #countdown-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: var(--blue); z-index: 5; text-shadow: 0 0 20px rgba(41, 121, 255, 0.5); }
-        
         .history-panel { height: 180px; background: #050505; border-top: 1px solid #222; overflow-y: auto; padding: 15px; }
         .hist-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .hist-table th { color: #444; text-align: left; padding-bottom: 10px; border-bottom: 1px solid #111; }
         .hist-table td { padding: 8px 0; border-bottom: 1px solid #111; color: #ccc; }
-        
         .control-bar { padding: 15px; background: #111; display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
         .input-group { text-align: center; border-right: 1px solid #333; padding-right: 15px; }
         input { width: 100px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; text-align: center; font-size: 1.1rem; }
         .btn-main { height: 50px; padding: 0 25px; border-radius: 6px; border: none; color: #fff; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase; }
         .btn-action { background: #333; font-size: 0.7rem; padding: 4px 10px; height: auto; border: 1px solid #444; margin: 2px; cursor: pointer; border-radius: 4px; color: #fff; }
-        
-        /* Deposit Modal Style */
         .deposit-input { width: 100% !important; margin: 15px 0; background: #222 !important; border: 1px solid var(--blue) !important; }
     </style>
 </head>
@@ -91,12 +78,9 @@
         <div class="auth-container">
             <i class="fas fa-rocket" style="font-size: 3rem; color: var(--primary); margin-bottom: 10px;"></i>
             <h2 id="auth-title">LOGIN</h2>
-            
             <input type="number" id="u-phone" class="auth-input" placeholder="PHONE NUMBER">
             <input type="password" id="u-pass" class="auth-input" placeholder="PASSWORD">
-            
             <button id="auth-btn" class="btn-main" style="background:var(--primary); margin-top:20px; width: 100%;" onclick="handleAuth()">LOGIN NOW</button>
-            
             <div id="auth-switch">
                 <span class="auth-link" onclick="toggleAuth(true)">Don't have an account? Signup</span><br>
                 <span class="auth-link" style="color:#666" onclick="forgotPass()">Forgot Password?</span>
@@ -116,7 +100,7 @@
             <div class="control-bar">
                 <div class="input-group">
                     <small style="color:#666">BALANCE</small><br>
-                    <span style="color: var(--green); font-weight: bold; font-size: 1.1rem;">₹<span id="u-bal">0.00</span></span><br>
+                    <span style="color: var(--green); font-weight: bold; font-size: 1.1rem;">Rs.<span id="u-bal">0.00</span></span><br>
                     <button class="btn-action" style="background:var(--blue)" onclick="openDep()">DEPOSIT</button>
                     <button class="btn-action" onclick="openWD()">WITHDRAW</button>
                 </div>
@@ -154,10 +138,8 @@
         let userPh = "", currentMult = 1.00, isRunning = false, hasBet = false, hasCashedOut = false;
         let isBettingAllowed = false, betValue = 0, gameLoop, crashHistoryArr = [];
         let isSignupMode = false;
-        
         const adminWhatsApp = "+923423944508"; 
 
-        // --- Auth Functions ---
         function toggleAuth(signup) {
             isSignupMode = signup;
             document.getElementById('auth-title').innerText = signup ? "SIGNUP" : "LOGIN";
@@ -171,18 +153,14 @@
         function handleAuth() {
             userPh = document.getElementById('u-phone').value;
             const userPass = document.getElementById('u-pass').value;
-            
             if(userPh.length < 5 || userPass.length < 4) return alert("Enter valid Phone and Password (min 4 chars)");
-
             const urlParams = new URLSearchParams(window.location.search);
             const refBy = urlParams.get('ref');
-
             db.ref('users/' + userPh).once('value', snap => {
                 if (isSignupMode) {
                     if(snap.exists()) return alert("User already exists! Please Login.");
                     db.ref('users/' + userPh).set({ 
-                        password: userPass,
-                        balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
+                        password: userPass, balance: 30, withdrawCount: 0, activeReferrals: 0, referrals: 0, referredBy: refBy || "direct", isRecharged: false 
                     }).then(() => {
                         if(refBy && refBy !== userPh) db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
                         enterGame();
@@ -207,16 +185,14 @@
             syncData();
             startCountdown();
         }
-        // --- End Auth Functions ---
 
-        // Deposit Functions
         function openDep() { document.getElementById('deposit-modal').style.display = 'flex'; }
         function closeDep() { document.getElementById('deposit-modal').style.display = 'none'; }
         
         function sendDepositToWhatsApp() {
             const amount = document.getElementById('dep-amount').value;
             if(!amount || amount < 1) return alert("Please enter a valid amount!");
-            const message = `Hello Admin, I want to Deposit Money.\n\nUser Phone: ${userPh}\nAmount: ₹${amount}\n\nPlease update my balance.`;
+            const message = `Hello Admin, I want to Deposit Money.\n\nUser Phone: ${userPh}\nAmount: Rs.${amount}\n\nPlease update my balance.`;
             window.open(`https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
             closeDep();
         }
@@ -226,29 +202,25 @@
                 let hasPending = false;
                 snap.forEach(c => { if(c.val().status === 'pending') hasPending = true; });
                 if(hasPending) { alert("You already have a pending withdrawal request!"); return; }
-
                 const userSnap = await db.ref('users/' + userPh).once('value');
                 const data = userSnap.val();
                 const count = data.withdrawCount || 0;
                 const activeRefs = data.activeReferrals || 0;
                 const balance = data.balance || 0;
                 let limit = [100, 300, 500, 1000][count] || 1000;
-                
                 document.getElementById('withdraw-modal').style.display = 'flex';
                 document.getElementById('u-invite-id').innerText = userPh;
-                document.getElementById('wd-amount-val').innerText = "₹" + limit;
-                
+                document.getElementById('wd-amount-val').innerText = "Rs." + limit;
                 let locked = false;
                 if(count == 3 && activeRefs < 1) { locked = true; document.getElementById('needed-refs').innerText = "1"; }
                 if(count >= 4 && activeRefs < 2) { locked = true; document.getElementById('needed-refs').innerText = (2 - activeRefs); }
-                
                 if(locked) {
                     document.getElementById('wd-status').innerText = "Withdrawal Level " + (count+1) + " Locked!";
                     document.getElementById('referral-info').style.display = 'block';
                     document.getElementById('wd-action-area').style.display = 'none';
                     loadMyReferrals();
                 } else if(balance < limit) {
-                    document.getElementById('wd-status').innerText = "Low Balance! Minimum ₹" + limit + " needed.";
+                    document.getElementById('wd-status').innerText = "Low Balance! Minimum Rs." + limit + " needed.";
                     document.getElementById('referral-info').style.display = 'none';
                     document.getElementById('wd-action-area').style.display = 'none';
                 } else {
@@ -301,7 +273,7 @@
                 snap.forEach(child => {
                     let d = child.val();
                     let color = d.win > 0 ? 'var(--green)' : '#ff4b2b';
-                    tbody.innerHTML = `<tr><td>${d.time}</td><td>₹${d.bet}</td><td>${d.mult}x</td><td style="color:${color}">${d.win > 0 ? '+' : ''}₹${d.win}</td></tr>` + tbody.innerHTML;
+                    tbody.innerHTML = `<tr><td>${d.time}</td><td>Rs.${d.bet}</td><td>${d.mult}x</td><td style="color:${color}">${d.win > 0 ? '+' : ''}Rs.${d.win}</td></tr>` + tbody.innerHTML;
                 });
             });
         }
@@ -336,7 +308,6 @@
             document.getElementById('btn-cancel').style.display = 'none';
             document.getElementById('btn-cash').style.display = 'none';
             document.getElementById('wait-msg').style.display = 'none';
-            
             let timer = setInterval(() => {
                 document.getElementById('countdown-box').innerText = count > 0 ? count : "GO!";
                 if(count < 0) {
@@ -360,7 +331,7 @@
         function placeBet() {
             if(!isBettingAllowed) return;
             betValue = Number(document.getElementById('bet-amt').value);
-            let bal = Number(document.getElementById('u-bal').innerText);
+            let bal = Number(document.getElementById('u-bal').innerText.replace('Rs.', ''));
             if(betValue < 1 || betValue > bal) return;
             db.ref('users/' + userPh).update({ balance: Number((bal - betValue).toFixed(2)) });
             hasBet = true;
@@ -370,7 +341,7 @@
 
         function cancelBet() {
             if(!isBettingAllowed || !hasBet) return;
-            let bal = Number(document.getElementById('u-bal').innerText);
+            let bal = Number(document.getElementById('u-bal').innerText.replace('Rs.', ''));
             db.ref('users/' + userPh).update({ balance: Number((bal + betValue).toFixed(2)) });
             hasBet = false;
             document.getElementById('btn-cancel').style.display = 'none';
