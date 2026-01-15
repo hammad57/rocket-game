@@ -352,10 +352,13 @@
             isRunning = true;
             let cp;
             let seed = Math.random() * 100;
-            if (seed < 25) cp = 1.00 + (Math.random() * 0.05);
-            else if (seed < 55) cp = 1.2 + (Math.random() * 0.8);
-            else if (seed < 90) cp = 2.0 + (Math.random() * 3.0);
-            else cp = 5.0 + (Math.random() * 10.0);
+            
+            // --- UPDATED LOGIC FOR FAIRER PLAY ---
+            if (seed < 8) cp = 1.05 + (Math.random() * 0.15);      // Only 8% chance to crash very early
+            else if (seed < 40) cp = 1.4 + (Math.random() * 1.6); // 32% chance for 1.4x to 3.0x
+            else if (seed < 88) cp = 3.0 + (Math.random() * 7.0); // 48% chance for 3.0x to 10.0x
+            else cp = 10.0 + (Math.random() * 40.0);              // 12% chance for big wins up to 50x
+            
             cp = Number(cp.toFixed(2));
             gameLoop = setInterval(() => {
                 currentMult += (currentMult < 3 ? 0.03 : 0.08);
